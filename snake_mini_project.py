@@ -7,25 +7,39 @@ Name:
 Date:
 """
 import turtle 
-import random 
-
+import random
 turtle.tracer(1,0) 
-
-SIZE_X=800
-SIZE_Y=500
-turtle.setup(SIZE_X, SIZE_Y) 
-turtle.penup()
+SIZE_X=900
+SIZE_Y=900
+turtle.setup(SIZE_X, SIZE_Y)
+turtle.bgcolor("light green")
 
 SQUARE_SIZE = 20
 START_LENGTH = 10
+score = 0
 
-
+score_turtle = turtle.Turtle()
+score_turtle.penup()
+score_turtle.goto(-250,200)
+score_turtle.hideturtle()
+square = turtle.Turtle()
+square.shape("blank")
+square.speed(5)
+square.penup()
+square.goto(-350,-350)
+square.pendown()
+square.pensize(5)
+for i in range(4):
+    square.forward(700)
+    square.left(90)
+turtle.penup()
 pos_list = []
 stamp_list = []
 food_pos = []
 food_stamps = []
 
 snake = turtle.clone()
+snake.goto(0,0)
 snake.shape("square")
 turtle.hideturtle()
 for i  in range(START_LENGTH):
@@ -60,10 +74,10 @@ RIGHT = 3
 
 
 direction = UP
-UP_EDGE = 250
-DOWN_EDGE = -250
-RIGHT_EDGE = 400
-LEFT_EDGE = -400
+UP_EDGE = 340
+DOWN_EDGE = -340
+RIGHT_EDGE = 340
+LEFT_EDGE = -340
 
 
 def up():
@@ -92,14 +106,15 @@ turtle.onkeypress(down, DOWN_ARROW)
 turtle.onkeypress(left, LEFT_ARROW)
 turtle.onkeypress(right, RIGHT_ARROW)
 turtle.listen()
+def make_score():
+    score_turtle.clear()
+    score_turtle.write(score, move=False, align = 'left' , font=("fantasy", 24, "normal"))
+    score_turtle.color("purple")
 def make_food():
-    #The screen positions go from -SIZE/2 to +SIZE/2
-    #But we need to make food pieces only appear on game squares
-    #So we cut up the game board into multiples of SQUARE_SIZE.
-    min_x=-int(SIZE_X/2/SQUARE_SIZE)+1
-    max_x=int(SIZE_X/2/SQUARE_SIZE)-1
-    min_y=-int(SIZE_Y/2/SQUARE_SIZE)-1
-    max_y=int(SIZE_Y/2/SQUARE_SIZE)+1
+    min_x=-int(650/2/SQUARE_SIZE)+1
+    max_x=int(650/2/SQUARE_SIZE)-1
+    min_y=-int(650/2/SQUARE_SIZE)-1
+    max_y=int(650/2/SQUARE_SIZE)+1
     
     #Pick a position that is a random multiple of SQUARE_SIZE
     food_x = random.randint(min_x,max_x)*SQUARE_SIZE
@@ -115,6 +130,7 @@ def make_food():
     
         ##3.WRITE YOUR CODE HERE: Add the food turtle's stamp to the food stamps list
 def move_snake():
+    color_list = ['red','blue','green', 'yellow' , 'purple' ,'orange','pink','light blue','violet','lime','navy','crimson']
     my_pos = snake.pos()
     x_pos = my_pos[0]
     y_pos = my_pos[1]
@@ -136,35 +152,52 @@ def move_snake():
     
     if direction==RIGHT:
         snake.goto(x_pos + SQUARE_SIZE, y_pos)
+        snake.color(color_list[random.randint(0,len(color_list)-1)])
         print("You moved right!")
     elif direction==LEFT:
         snake.goto(x_pos - SQUARE_SIZE, y_pos)
         print("You moved left!")
+        snake.color(color_list[random.randint(0,len(color_list)-1)])
         
     elif direction==UP:
         snake.goto(x_pos, y_pos + SQUARE_SIZE)
+        snake.color(color_list[random.randint(0,len(color_list)-1)])
         print("You moved up!")
     elif direction==DOWN:
         snake.goto(x_pos, y_pos - SQUARE_SIZE)
+        snake.color(color_list[random.randint(0,len(color_list)-1)])
         print("You moved down!")
-    
+    #for i in range(len(pos_list)):
+    if snake.pos() in pos_list[:-1]:
+        quit()
 
-        
+    
     my_pos=snake.pos() 
     pos_list.append(my_pos)
     new_stamp = snake.stamp()
     stamp_list.append(new_stamp)
-    ######## SPECIAL PLACE - Remember it for Part 5
-    #pop zeroth element in pos_list to get
-    #rid of last the last 
-    #piece of the tail
-    old_stamp = stamp_list.pop(0)
-    snake.clearstamp(old_stamp)
-    pos_list.pop(0)
+    
+    
+    
+    global score
+    
     turtle.ontimer(move_snake,TIME_STEP)
     if len(food_stamps) <= 6:
         make_food()
-
+    if snake.pos() in food_pos:
+        food_ind = food_pos.index(snake.pos())
+        food.clearstamp(food_stamps[food_ind])
+        food_pos.pop(food_ind)
+        food_stamps.pop(food_ind)
+        print("You have eatan the food")
+        score +=1
+        make_food()
+        make_score()
+    else:
+        pos_list.pop(0)
+        old_stamp = stamp_list.pop(0)
+        snake.clearstamp(old_stamp)
+        
 turtle.register_shape("trash.gif")
 food = turtle.clone()
 food.shape("trash.gif") 
@@ -183,6 +216,83 @@ for i in food_pos:
     food.goto(i[0], i[1])
     stamp=food.stamp()
     food_stamps.append(stamp)
+    '''
+def enemy():
+    SQUARE_SIZE = 20
+    START_LENGTH = 1
 
+    enemy = turtle.clone()
+    enemy.goto(-200,-200)
+    snake.shape("square")
+    turtle.hideturtle()
+    stamp_list = []
+    for i  in range(START_LENGTH):
+        x_pos=snake.pos()[0] 
+        y_pos=snake.pos()[1]
 
+      
+        x_pos+=SQUARE_SIZE
+
+        my_pos=(x_pos,y_pos) 
+        snake.goto(x_pos,y_pos) 
+       
+       
+        pos_list.append(my_pos) 
+
+           
+        stamp_ID = snake.stamp()
+        stamp_list.append(stamp_ID)
+    UP = 0
+    LEFT = 1
+    DOWN = 2
+    RIGHT = 3
+    direction= UP
+    UP_EDGE = 340
+    DOWN_EDGE = -340
+    RIGHT_EDGE = 340
+    LEFT_EDGE = -340
+    TIME_STEP = 100
+    TIME_STEP1 = 1000
+
+    def move_enemy():
+        global direction
+        my_pos = enemy.pos()
+        x_pos = my_pos[0]
+        y_pos = my_pos[1]
+        new_pos = enemy.pos()
+        new_x_pos = new_pos[0]
+        new_y_pos = new_pos[1]
+        if new_x_pos >= RIGHT_EDGE:
+            direction = LEFT
+        elif new_x_pos <= LEFT_EDGE:
+            direction = RIGHT
+        elif new_y_pos <= DOWN_EDGE:
+            direction = UP
+        elif new_y_pos >= UP_EDGE:
+            direction = DOWN
+        
+        if direction==RIGHT:
+            enemy.goto(x_pos + SQUARE_SIZE, y_pos)
+            print("The enemy moved right!")
+        elif direction==LEFT:
+            snake.goto(x_pos - SQUARE_SIZE, y_pos)
+            print("The enemy moved left!")
+        elif direction==UP:
+            enemy.goto(x_pos, y_pos + SQUARE_SIZE)
+            print("The enemy moved up!")
+        elif direction==DOWN:
+            enemy.goto(x_pos, y_pos - SQUARE_SIZE)
+            print("The enemy moved down!")
+
+        
+        my_pos=enemy.pos() 
+        pos_list.append(my_pos)
+        new_stamp = enemy.stamp()
+        stamp_list.append(new_stamp)
+        
+        enemy.towards(snake.pos())
+        turtle.ontimer(move_enemy, TIME_STEP)
+    move_enemy()
+enemy()
+'''
 move_snake()
